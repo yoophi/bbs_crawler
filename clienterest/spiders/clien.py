@@ -21,6 +21,9 @@ class ClienSpider(scrapy.Spider):
             yield scrapy.Request(full_url, self.parse_post)
 
     def parse_post(self, response):
+        qs = dict(urlparse.parse_qsl(urlparse.urlparse(response.url).query))
+        id = int(qs.get('wr_id'))
+
         title = response.css('div.view_title span::text').extract_first().strip()
         body = ''.join(
             response.xpath("//span[@id='writeContents']/node()").extract()
@@ -28,6 +31,6 @@ class ClienSpider(scrapy.Spider):
 
         created_at, hit_cnt, vote_cnt = response.css('.post_info').re(r'.*(\d\d\d\d-\d\d-\d\d).*(\d+).*(\d+).*')
 
-        post = PostItem(title=title, body=body, created_at=created_at, hit_cnt=int(hit_cnt), vote_cnt=int(vote_cnt))
+        post = PostItem(id=id, title=title, body=body, created_at=created_at, hit_cnt=int(hit_cnt), vote_cnt=int(vote_cnt))
 
         yield post

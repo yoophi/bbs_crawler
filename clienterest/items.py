@@ -15,6 +15,7 @@ class ClienterestItem(scrapy.Item):
 
 
 class PostItem(scrapy.Item):
+    id = scrapy.Field()
     title = scrapy.Field()
     body = scrapy.Field()
 

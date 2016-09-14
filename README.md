@@ -4,6 +4,8 @@
 
 ```
 pip install -r requirements.txt
+
+cd clien_net
 scrapy crawl clien
 ```
 

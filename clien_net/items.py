@@ -18,7 +18,10 @@ class PostItem(scrapy.Item):
     id = scrapy.Field()
     title = scrapy.Field()
     body = scrapy.Field()
-
+    site = scrapy.Field()
+    board = scrapy.Field()
     created_at = scrapy.Field()
-    hit_cnt = scrapy.Field()
-    vote_cnt = scrapy.Field()
+
+    cnt_hit = scrapy.Field()
+    cnt_vote = scrapy.Field()
+    cnt_comment = scrapy.Field()

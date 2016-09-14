@@ -4,6 +4,8 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
+from datetime import datetime
+
 import pymongo
 from scrapy import log
 from scrapy.conf import settings
@@ -32,12 +34,20 @@ class MongoPipeline(object):
     def open_spider(self, spider):
         self.client = pymongo.MongoClient(self.mongo_uri)
         self.db = self.client[self.mongo_db]
+        self.collection = self.db[self.collection_name]
 
     def close_spider(self, spider):
         self.client.close()
 
     def process_item(self, item, spider):
-        self.db[self.collection_name].insert(dict(item))
+        _pk = {'site': item['site'], 'board': item['board'], 'id': item['id']}
+        _meta = {k: item[k] for k in item.keys() if k.startswith('cnt_')}
+        _meta['created_at'] = datetime.now()
+
+        if self.collection.find_one(_pk):
+            self.collection.update_one(_pk, {'$set': dict(item), '$push': {'meta': _meta}})
+        else:
+            self.collection.insert(dict(meta=[_meta], **dict(item)))
 
         return item
 

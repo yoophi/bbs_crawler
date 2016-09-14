@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import urlparse
+from datetime import datetime
 
 import scrapy
 from ..items import PostItem
@@ -10,7 +11,10 @@ class ClienSpider(scrapy.Spider):
     allowed_domains = ["clien.net", "www.clien.net"]
     start_urls = (
         'http://www.clien.net/cs2/bbs/board.php?bo_table=park',
-
+        'http://www.clien.net/cs2/bbs/board.php?bo_table=park&page=2',
+        'http://www.clien.net/cs2/bbs/board.php?bo_table=park&page=3',
+        'http://www.clien.net/cs2/bbs/board.php?bo_table=park&page=4',
+        'http://www.clien.net/cs2/bbs/board.php?bo_table=park&page=5',
     )
 
     def parse(self, response):
@@ -29,8 +33,12 @@ class ClienSpider(scrapy.Spider):
             response.xpath("//span[@id='writeContents']/node()").extract()
         )[18:-19]
 
-        created_at, hit_cnt, vote_cnt = response.css('.post_info').re(r'.*(\d\d\d\d-\d\d-\d\d).*(\d+).*(\d+).*')
+        created_at, cnt_hit, cnt_vote = response.css('.post_info').re(r'.*(\d\d\d\d-\d\d-\d\d \d\d:\d\d).*(\d+).*(\d+).*')
+        created_at = datetime.strptime(created_at, '%Y-%m-%d %H:%M')
+        cnt_comment = len(response.css('.reply_base'))
 
-        post = PostItem(id=id, title=title, body=body, created_at=created_at, hit_cnt=int(hit_cnt), vote_cnt=int(vote_cnt))
+        post = PostItem(id=id, title=title, body=body, created_at=created_at,
+                        site='clien.net', board='park',
+                        cnt_hit=int(cnt_hit), cnt_vote=int(cnt_vote), cnt_comment=cnt_comment,)
 
         yield post

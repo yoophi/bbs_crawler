@@ -62,11 +62,19 @@ ROBOTSTXT_OBEY = True
 #    'scrapy.extensions.telnet.TelnetConsole': None,
 #}
 
+MONGO_URI='mongodb://localhost:27017/'
+
+# For RPMongoPipeline
+MONGODB_SERVER = "localhost"
+MONGODB_PORT = 27017
+MONGODB_DB = "clien_net"
+MONGODB_COLLECTION = "posts"
+
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'clien_net.pipelines.SomePipeline': 300,
-#}
+ITEM_PIPELINES = {
+   'clien_net.pipelines.MongoPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html

@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import traceback
 import urlparse
 from datetime import datetime
 
 import scrapy
+from scrapy import log
+
 from ..items import PostItem
 
 
@@ -28,17 +31,22 @@ class ClienSpider(scrapy.Spider):
         qs = dict(urlparse.parse_qsl(urlparse.urlparse(response.url).query))
         id = int(qs.get('wr_id'))
 
-        title = response.css('div.view_title span::text').extract_first().strip()
-        body = ''.join(
-            response.xpath("//span[@id='writeContents']/node()").extract()
-        )[18:-19]
+        try:
+            title = response.css('div.view_title span::text').extract_first().strip()
+            body = ''.join(
+                response.xpath("//span[@id='writeContents']/node()").extract()
+            )[18:-19]
 
-        created_at, cnt_hit, cnt_vote = response.css('.post_info').re(r'.*(\d\d\d\d-\d\d-\d\d \d\d:\d\d).*(\d+).*(\d+).*')
-        created_at = datetime.strptime(created_at, '%Y-%m-%d %H:%M')
-        cnt_comment = len(response.css('.reply_base'))
+            created_at, cnt_hit, cnt_vote = response.css('.post_info').re(r'.*(\d\d\d\d-\d\d-\d\d \d\d:\d\d).*(\d+).*(\d+).*')
+            created_at = datetime.strptime(created_at, '%Y-%m-%d %H:%M')
+            cnt_comment = len(response.css('.reply_base'))
 
-        post = PostItem(id=id, title=title, body=body, created_at=created_at,
-                        site='clien.net', board='park',
-                        cnt_hit=int(cnt_hit), cnt_vote=int(cnt_vote), cnt_comment=cnt_comment,)
+            post = PostItem(id=id, title=title, body=body, created_at=created_at,
+                            site='clien.net', board='park',
+                            cnt_hit=int(cnt_hit), cnt_vote=int(cnt_vote), cnt_comment=cnt_comment,)
 
-        yield post
+            yield post
+        except AttributeError as e:
+            log.msg('Error parsing: %s' % response.url, _level=log.ERROR)
+            print response
+            traceback.print_exc()

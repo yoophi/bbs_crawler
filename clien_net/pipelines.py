@@ -41,13 +41,13 @@ class MongoPipeline(object):
 
     def process_item(self, item, spider):
         _pk = {'site': item['site'], 'board': item['board'], 'id': item['id']}
-        _meta = {k: item[k] for k in item.keys() if k.startswith('cnt_')}
-        _meta['created_at'] = datetime.now()
+        _meta_info = {k: item[k] for k in item.keys() if k.startswith('cnt_')}
+        _meta_info['created_at'] = datetime.now()
 
         if self.collection.find_one(_pk):
-            self.collection.update_one(_pk, {'$set': dict(item), '$push': {'meta': _meta}})
+            self.collection.update_one(_pk, {'$set': dict(item), '$push': {'meta_info': _meta_info}})
         else:
-            self.collection.insert(dict(meta=[_meta], **dict(item)))
+            self.collection.insert(dict(meta_info=[_meta_info], **dict(item)))
 
         return item
 
